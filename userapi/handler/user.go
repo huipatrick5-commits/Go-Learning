@@ -47,7 +47,7 @@ func (h *UserHandler) AddUser(c *gin.Context) {
         utils.Fail(c, http.StatusNotFound, err.Error())
         return
     }
-    c.JSON(http.StatusOK, gin.H{
+    utils.Success(c, gin.H{
         "message": "加入成功",
         "id":   user.ID,
         "name": user.Name,
@@ -68,7 +68,7 @@ func (h *UserHandler) DelUser(c *gin.Context) {
         return
     }
 
-    c.JSON(http.StatusOK, gin.H{
+    utils.Success(c, gin.H{
         "message": "删除成功",
         "id": id,
     })
@@ -85,7 +85,7 @@ func (h *UserHandler) ModUser(c *gin.Context) {
         utils.Fail(c, http.StatusNotFound, err.Error())
         return
     }
-    c.JSON(http.StatusOK, gin.H{
+    utils.Success(c, gin.H{
         "message": "加入成功",
         "id":   user.ID,
         "name": user.Name,
