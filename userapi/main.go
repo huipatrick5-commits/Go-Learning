@@ -26,10 +26,19 @@ func main() {
     h := handler.NewUserHandler(svc)
 
     r := gin.Default()
-    r.GET("/user/:id", h.GetUser)
-    r.POST("/user", h.AddUser)
-    r.DELETE("/user/:id", h.DelUser)
-    r.PUT("/user", h.ModUser)
+    
+    // 不需要认证
+    r.POST("/login", h.Login)
 
+    // 需要认证的路由组
+    auth := r.Group("/api")
+    auth.Use(handler.AuthMiddleware())
+    {
+        auth.GET("/user/:id", h.GetUser)
+        auth.POST("/user", h.AddUser)
+        auth.DELETE("/user/:id", h.DelUser)
+        auth.PUT("/user", h.ModUser)
+    }
+    
     r.Run(":8080")
 }
