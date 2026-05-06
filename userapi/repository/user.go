@@ -6,8 +6,8 @@ import (
 
 type User struct {
     ID   int    `gorm:"primaryKey"`
-    Name string `gorm:"column:name"`
-    Age  int    `gorm:"column:age"`
+    Name string `gorm:"column:name" binding:"required"`
+    Age  int    `gorm:"column:age" binding:"required,min=1,max=150"`
 }
 
 type UserRepository struct {

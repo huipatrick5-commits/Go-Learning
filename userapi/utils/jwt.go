@@ -6,7 +6,13 @@ import (
     "time"
 )
 
-var secretKey = []byte("your-secret-key")  // 签名密钥
+var secretKey []byte
+var expire int
+
+func InitJWT(secret string, expireHours int) {
+    secretKey = []byte(secret)
+    expire = expireHours
+}
 
 type Claims struct {
     UserID int `json:"user_id"`
@@ -18,7 +24,7 @@ func GenerateToken(userID int) (string, error) {
     claims := Claims{
         UserID: userID,
         RegisteredClaims: jwt.RegisteredClaims{
-            ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)), // 24小时过期
+            ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(expire) * time.Hour)), // 24小时过期
         },
     }
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

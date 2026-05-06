@@ -1,36 +1,44 @@
 package main
 
 import (
-    "userapi/handler"
-    "userapi/repository"
-    "userapi/service"
+	"userapi/config"
+	"userapi/handler"
+	"userapi/repository"
+	"userapi/service"
+	"userapi/utils"
 
-    "github.com/gin-gonic/gin"
-    "gorm.io/driver/sqlite"
-    "gorm.io/gorm"
+	"github.com/gin-gonic/gin"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+
+	"fmt"
 )
 
 func main() {
-    // 初始化数据库
-    db, err := gorm.Open(sqlite.Open("user.db"), &gorm.Config{})
+    // 加载配置
+    cfg, err := config.Load()
+    if err != nil {
+        panic("配置文件加载失败: " + err.Error())
+    }
+
+    utils.InitJWT(cfg.JWT.Secret, cfg.JWT.Expire)
+
+    // 用配置初始化数据库
+    db, err := gorm.Open(sqlite.Open(cfg.Database.Path), &gorm.Config{})
     if err != nil {
         panic("数据库连接失败")
     }
 
-    // 自动建表
     db.AutoMigrate(&repository.User{})
 
-    // 从下往上初始化
     repo := repository.NewUserRepository(db)
     svc := service.NewUserService(repo)
     h := handler.NewUserHandler(svc)
 
     r := gin.Default()
-    
-    // 不需要认证
+
     r.POST("/login", h.Login)
 
-    // 需要认证的路由组
     auth := r.Group("/api")
     auth.Use(handler.AuthMiddleware())
     {
@@ -39,6 +47,7 @@ func main() {
         auth.DELETE("/user/:id", h.DelUser)
         auth.PUT("/user", h.ModUser)
     }
-    
-    r.Run(":8080")
+
+    // 用配置的端口启动
+    r.Run(fmt.Sprintf(":%d", cfg.Server.Port))
 }
